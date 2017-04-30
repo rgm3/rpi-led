@@ -1,0 +1,2 @@
+#!/bin/bash
+GPIOZERO_PIN_FACTORY=PiGPIOPin PIGPIO_ADDR=localhost python3 led.py
