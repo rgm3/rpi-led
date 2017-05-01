@@ -1,60 +1,60 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+""" Raspberry Pi networked LED rainbow."""
 
-# Common cathode RGB led.
-
-import argparse
+from time import sleep
 from gpiozero import RGBLED
 from gpiozero.pins.pigpiod import PiGPIOPin
-from signal import pause
 import gpiozero.devices
-
-#parser = argparse.ArgumentParser(description = 'Light up the world!')
-#parser.add_argument('rgb', metavar='0-255', type=int, nargs=3,
-#                   help='Red, Green, and Blue color values (0-255).')
-#args = parser.parse_args()
 
 gpiozero.devices.pin_factory = PiGPIOPin
 
-from time import sleep
-import sys
-import os
+def cluster_led(hostname):
+    """Return an RGB LED object for the given host"""
+    return RGBLED(
+        PiGPIOPin(2, host=hostname),
+        PiGPIOPin(3, host=hostname),
+        PiGPIOPin(4, host=hostname))
 
-led = RGBLED(2,3,4)
+LED1 = cluster_led('localhost')
+LED2 = cluster_led('piceph2')
+LED3 = cluster_led('piceph3')
+LED4 = cluster_led('piceph4')
 
-
-# Input a value 0 to 255 to get a color value.
-def Wheel(position):
-  if position < 85:
-    setColor(position * 3, 255 - position * 3, 0)
-  elif position < 170:
-    position -= 85;
-    setColor(255 - position * 3, 0, position * 3)
-  else:
-    position -= 170;
-    setColor(0, position * 3, 255 - position * 3)
+LEDS = [LED1, LED2, LED3, LED4]
 
 
-def setColor(red, green, blue):
-    # Convert 0-255 range to 0-1.
-    led.color = (red/255.0, green/255.0, blue/255.0)
+
+def wheel(position):
+    """ Input a value 0 to 255 to get a gpiozero color tuple with values 0 - 1."""
+    if position < 85:
+        rgb = (position * 3, 255 - position * 3, 0)
+    elif position < 170:
+        position -= 85
+        rgb = (255 - position * 3, 0, position * 3)
+    else:
+        position -= 170
+        rgb = (0, position * 3, 255 - position * 3)
+
+    return tuple([x/255.0 for x in rgb])
 
 
-try:
-  i = 0
-  while True:
-    Wheel(i)
-    i += 1
-    if i > 255:
-      i = 0
-    sleep(0.05)
-except KeyboardInterrupt:
-  pass
+def main():
+    """Rainbow wheel on all LEDs."""
+    try:
+        while True:
+            for i in range(255):
+                for led in LEDS:
+                    led.color = wheel(i)
+            sleep(0.05)
+    except KeyboardInterrupt:
+        pass
+
+    for led in LEDS:
+        led.off()
 
 
-led.off()
+if __name__ == '__main__':
+    main()
 
-
-#sys.exit()
-#exit()
-#quit()
-os._exit(0)
+# vim: sw=4 ts=4 expandtab
