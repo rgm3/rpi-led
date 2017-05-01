@@ -23,6 +23,7 @@ LED4 = cluster_led('piceph4')
 
 LEDS = [LED1, LED2, LED3, LED4]
 
+DELAY = 0.02 # time to sleep between color steps
 
 
 def wheel(position):
@@ -43,10 +44,10 @@ def main():
     """Rainbow wheel on all LEDs."""
     try:
         while True:
-            for i in range(255):
+            for i in range(0, 255, 2):
                 for led in LEDS:
                     led.color = wheel(i)
-            sleep(0.05)
+                    sleep(DELAY)
     except KeyboardInterrupt:
         pass
 
