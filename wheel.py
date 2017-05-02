@@ -28,6 +28,9 @@ DELAY = 0.02 # time to sleep between color steps
 
 def wheel(position):
     """ Input a value 0 to 255 to get a gpiozero color tuple with values 0 - 1."""
+    if position < 0 or position > 255:
+        if position >= -255: position = 255 + position
+        else: position %= 255
     if position < 85:
         rgb = (position * 3, 255 - position * 3, 0)
     elif position < 170:
@@ -44,9 +47,9 @@ def main():
     """Rainbow wheel on all LEDs."""
     try:
         while True:
-            for i in range(0, 255, 2):
-                for led in LEDS:
-                    led.color = wheel(i)
+            for pos in range(0, 255, 8):
+                for idx, led in enumerate(LEDS):
+                    led.color = wheel(pos - (idx * 16))
                     sleep(DELAY)
     except KeyboardInterrupt:
         pass
